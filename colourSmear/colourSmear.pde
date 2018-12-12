@@ -49,7 +49,7 @@ void mouseDragged(){
     int colourChanging = (int) (3*(mouseY-(colourVal[0].y-height/120))/( (colourVal[2].y+height/60) - (colourVal[0].y-height/120) + 1 ) );
     colourVal[colourChanging].x = mouseX;
     drawColourSelector();  
-  } else if(mouseY> 2*height/3.0){
+  } else if(mouseY> 2*height/3.0 && pxlDensity>1){
     int point = mouseX;
     if(mouseX>width){
       point = width;
