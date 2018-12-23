@@ -2,7 +2,7 @@
 final int inputLayerLength = 5;
 final int lowwerHiddenLayerLength = 20;
 final int upperHiddenLayyerLength = 20;
-final int outputLayerLength = 4;
+final int outputLayerLength = 5;
 
 enum layerType{
   input,lowHidden,highHidden,output
@@ -93,7 +93,7 @@ class PlaneBrain{
   }
   
   void setInputLayer( Double[] values ){
-    for(int i =0; i <inputLayerLength;i++){
+    for(int i =0; i <min(inputLayerLength,values.length);i++){
       inputLayer[i].setInputNode( values[i] );
     }
   }
@@ -114,6 +114,7 @@ class PlaneBrain{
     BrainNode[][] arrayOfLayer = {inputLayer,lowwerHiddenLayer,upperHiddenLayyer,outputLayer};
     ArrayList<PVector> previousLayer = new ArrayList<PVector>();
     ArrayList<PVector> previousLayerConstruction = new ArrayList<PVector>();    
+    float radius = 0;
     
     for(int i =0; i<arrayOfLayerLength.length;i++){
      float xPosOfLayer =  (i+1)*(wid/5.0);
@@ -124,12 +125,14 @@ class PlaneBrain{
      }
      previousLayerConstruction.clear();
      
+     radius = min(wid/5.0/2.0, hei/(arrayOfLayerLength[i]+1)/2.0 );
+     
      for(int j = 0; j < arrayOfLayerLength[i];j++){
        float yPosOfNode = (j+1)*(hei/( float )(arrayOfLayerLength[i]+1));
        BrainNode tempNode = arrayOfLayer[i][j];
        fill( (int) ((tempNode.getVal()+1)*255.0/2.0));
        noStroke();
-       ellipse(x+xPosOfLayer, y + yPosOfNode , 30.0,30.0);
+       ellipse(x+xPosOfLayer, y + yPosOfNode , radius,radius);
        
        previousLayerConstruction.add( new PVector(x+xPosOfLayer, y + yPosOfNode));
        
