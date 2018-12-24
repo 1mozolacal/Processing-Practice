@@ -1,3 +1,4 @@
+Map testMap;
 
 void setup(){
   fullScreen(2);//second screen if connected
@@ -7,14 +8,27 @@ void setup(){
   test.computeNet();
   test.visualize(0,0,900,900);
   
-  triangle(100,100,0,0,0,200);
+  testMap = new Map(200,0,width*0.75,height,100);
+  testMap.testDrawlines();
+  
+  delay(500);
 }
 
+boolean firstRun = true;
+float testScroll = 0;
 Plane testPlane = new Plane();
 
 
 void draw(){
-  background(100);
+  if(firstRun){
+    firstRun =false;
+    delay(2000);
+  }
+  background(255);
+  testMap.drawMap(testScroll);
+  //testScroll++;
+  
+  //background(100);
   if(keyPressed){
     if(key == 'a' ){
       testPlane.fly(fightDir.left);
@@ -31,9 +45,8 @@ void draw(){
     testPlane.fly(fightDir.coast);
   }
   testPlane.drawPlane();
-  //testing
   
   
-  //testing
+  
   
 }
