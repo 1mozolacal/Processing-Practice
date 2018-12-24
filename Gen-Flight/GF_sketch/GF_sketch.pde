@@ -8,7 +8,7 @@ void setup(){
   test.computeNet();
   test.visualize(0,0,900,900);
   
-  testMap = new Map(200,0,width*0.75,height,100);
+  testMap = new Map(20,0,width*0.75,height,150);
   testMap.testDrawlines();
   
   delay(500);
@@ -22,11 +22,11 @@ Plane testPlane = new Plane();
 void draw(){
   if(firstRun){
     firstRun =false;
-    delay(2000);
+    delay(500);
   }
   background(255);
   testMap.drawMap(testScroll);
-  //testScroll++;
+  testScroll++;
   
   //background(100);
   if(keyPressed){

@@ -19,9 +19,11 @@ class Map{
    mapWidth = lenghtOfTrack;
    unitLength = hei/mapHeight;
    
+   float boarderWidth = 2;
    obstacles.add( new MapObstacle(90f,20f,10f,40f,this) );
-   obstacles.add( new MapObstacle(20f,0f,1f,100f,this) );
-   obstacles.add( new MapObstacle(90f,20f,10f,40f,this) );
+   obstacles.add( new MapObstacle(0f,0f,boarderWidth,mapHeight,this) );//back boarder
+   obstacles.add( new MapObstacle(0f,0f,lenghtOfTrack,boarderWidth,this) );//top boarder
+   obstacles.add( new MapObstacle(0f,mapHeight-boarderWidth,lenghtOfTrack,boarderWidth,this) );//top boarder
  }//end of constructor
  
  void testDrawlines(){
@@ -37,16 +39,22 @@ class Map{
    
  }
  
- void drawMap(float test){
+ void drawMap(float scroll){
    //find where to draw 
    
    //Draw the Obstacles
    fill(200);
    rect(drawX,drawY,drawWidth,drawHeight);
    for(MapObstacle obs:obstacles){
-     obs.drawObs(test);
+     obs.drawObs(scroll);
    }
    //Draw the green end
+   if(scroll/unitLength + drawWidth/unitLength > mapWidth){
+     fill(0,255,0);
+     float tempXLoc = max(drawX , drawX - scroll + mapWidth*unitLength );
+     float tempWid = min(drawWidth,scroll + drawWidth - mapWidth*unitLength);
+     rect(tempXLoc ,drawY,tempWid, drawHeight);
+   }
  }
  
  float getUnitLength(){

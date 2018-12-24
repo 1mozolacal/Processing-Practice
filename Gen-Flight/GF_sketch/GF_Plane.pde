@@ -65,7 +65,7 @@ class Plane{
   
   void drawPlane(){
     noStroke();
-    fill(255,0,0,25);
+    fill(255,0,0,225);
     PVector front = PVector.add(position, heading.copy().normalize().mult(radius) );
     PVector left = PVector.add(position, heading.copy().normalize().rotate(PI*3.0/4.0).mult(radius) );
     PVector right = PVector.add(position, heading.copy().normalize().rotate(-PI*3.0/4.0).mult(radius) );
