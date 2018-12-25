@@ -31,5 +31,20 @@ class MapObstacle{
     rect(parnetMap.getX()+drawX, parnetMap.getY()+ (y*parnetMap.getUnitLength()) ,drawWidth,hei*parnetMap.getUnitLength());
   }
   
+  float getDrawX(){
+    return x*parnetMap.unitLength;
+  }
+  
+  float getDrawY(){
+    return y*parnetMap.unitLength;
+  }
+  
+  float getDrawWidth(){
+   return wid*parnetMap.unitLength; 
+  }
+  
+  float getDrawHeight(){
+    return hei*parnetMap.unitLength;  
+  }
   
 }

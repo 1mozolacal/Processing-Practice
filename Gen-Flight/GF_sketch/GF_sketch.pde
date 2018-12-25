@@ -8,7 +8,7 @@ void setup(){
   test.computeNet();
   test.visualize(0,0,900,900);
   
-  testMap = new Map(20,0,width*0.75,height,150);
+  testMap = new Map(0,0,width*0.75,height,150);
   testMap.testDrawlines();
   
   delay(500);
@@ -25,28 +25,28 @@ void draw(){
     delay(500);
   }
   background(255);
-  testMap.drawMap(testScroll);
+  float shift = testMap.shiftToLeader(testPlane.getPos().x);
+  testPlane.setShift(shift);
+  
+  testMap.drawMap();
   testScroll++;
   
   //background(100);
   if(keyPressed){
     if(key == 'a' ){
-      testPlane.fly(fightDir.left);
+      testPlane.fly(fightDir.left,testMap);
     } else if(key == 's'){
-      testPlane.fly(fightDir.back);
+      testPlane.fly(fightDir.back,testMap);
     } else if(key == 'd'){
-      testPlane.fly(fightDir.right);
+      testPlane.fly(fightDir.right,testMap);
     } else if(key == 'w'){
-      testPlane.fly(fightDir.forward);
+      testPlane.fly(fightDir.forward,testMap);
     } else{
-      testPlane.fly(fightDir.coast);  
+      testPlane.fly(fightDir.coast,testMap);  
     }
   } else {
-    testPlane.fly(fightDir.coast);
+    testPlane.fly(fightDir.coast,testMap);
   }
   testPlane.drawPlane();
-  
-  
-  
-  
+    
 }

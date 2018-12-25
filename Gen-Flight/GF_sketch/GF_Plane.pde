@@ -17,15 +17,20 @@ class Plane{
   boolean humanDriven = false;
   PVector velocity = new PVector(0,0);
   PVector heading = new PVector(1,0);
-  PVector position = new PVector(50,50);
-  
+  PVector position = new PVector(150,250);
+  float drawShift = 0;
   
   Plane(){
      
   }
   
   
-  void fly(fightDir dir){
+  void fly(fightDir dir, Map mapRef){
+    
+    if(!alive){
+      return;
+    }
+    
     if(velocity.mag()!=0){
       heading = velocity.copy().normalize();
     }
@@ -61,15 +66,36 @@ class Plane{
     //line(position.x,position.y, position.x + copy.x*30, position.y +copy.y*30);
     
     position.add(velocity);
+    
+    mapRef.checkHit(this);
   }//end of fly function
   
   void drawPlane(){
     noStroke();
     fill(255,0,0,225);
+    position.x-= drawShift;
     PVector front = PVector.add(position, heading.copy().normalize().mult(radius) );
     PVector left = PVector.add(position, heading.copy().normalize().rotate(PI*3.0/4.0).mult(radius) );
     PVector right = PVector.add(position, heading.copy().normalize().rotate(-PI*3.0/4.0).mult(radius) );
+    position.x += drawShift;
     triangle(front.x,front.y, left.x,left.y, right.x,right.y );
+  }
+  
+  PVector getPos(){
+    return position; 
+  }
+  
+  float getRadius(){
+    return radius;
+  }
+  
+  void crash(){
+   alive = false; 
+   print("crash");
+  }
+  
+  void setShift(float set){
+    drawShift = set;
   }
   
 }
