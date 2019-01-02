@@ -31,6 +31,101 @@ class MapObstacle{
     rect(parnetMap.getX()+drawX, parnetMap.getY()+ (y*parnetMap.getUnitLength()) ,drawWidth,hei*parnetMap.getUnitLength());
   }
   
+  float checkSightIntersection(PVector planePos, PVector planeSight, float xShiftForTesting){
+    
+    float closest = -1;
+    boolean infiniteSlope = false;
+    float slope=-999;
+    if(planeSight.x == 0){ 
+      infiniteSlope = true; 
+    }  else{ 
+      slope = planeSight.y/planeSight.x; 
+    }
+    
+    float deltaX = 0;
+    float deltaY = 0;
+    float interLoc = 0;
+    
+    if(!infiniteSlope){
+      //left side
+      
+      deltaX = (x * parnetMap.unitLength) - planePos.x;
+      deltaY = deltaX * slope;
+      
+      interLoc = planePos.y + deltaY;
+      if(interLoc>y*parnetMap.getUnitLength() && interLoc< (y+hei)*parnetMap.getUnitLength() ){//withing y range of the left side of the rect
+        PVector tempForDirCheck = new PVector(deltaX,deltaY);
+        if( abs(tempForDirCheck.heading() - planeSight.heading() ) < 0.05 ){//Same direction-ish
+          if( tempForDirCheck.mag()< closest || closest == -1 ){
+            closest = tempForDirCheck.mag();
+            //fill(255,0,255);
+            //ellipse(planePos.x+deltaX-xShiftForTesting, planePos.y+deltaY, 10,10);
+          }
+          
+        }
+      }
+      
+      //right side
+      deltaX = ((x+wid) * parnetMap.unitLength) - planePos.x;
+      deltaY = deltaX * slope;
+      
+      interLoc = planePos.y + deltaY;
+      if(interLoc>y*parnetMap.getUnitLength() && interLoc< (y+hei)*parnetMap.getUnitLength() ){//withing y range of the left side of the rect
+        PVector tempForDirCheck = new PVector(deltaX,deltaY);
+        if( abs(tempForDirCheck.heading() - planeSight.heading() ) < 0.05 ){//Same direction-ish
+          if( tempForDirCheck.mag()< closest || closest == -1 ){
+            if( tempForDirCheck.mag()< closest || closest == -1 ){
+              closest = tempForDirCheck.mag();
+              //fill(255,0,255);
+              //ellipse(planePos.x+deltaX-xShiftForTesting, planePos.y+deltaY, 10,10);
+            }
+          }
+        }
+      }
+    
+    }
+    
+    if(slope !=0){
+      //top side
+      deltaY = (y*parnetMap.getUnitLength() - planePos.y);
+      deltaX = deltaY/slope;
+      
+      
+      interLoc = planePos.x + deltaX;
+      if(interLoc>x*parnetMap.getUnitLength() && interLoc< (x+wid)*parnetMap.getUnitLength() ){//withing x range of the left side of the rect
+        PVector tempForDirCheck = new PVector(deltaX,deltaY);
+        if( abs(tempForDirCheck.heading() - planeSight.heading() ) < 0.05 ){//Same direction-ish
+          if( tempForDirCheck.mag()< closest || closest == -1 ){
+            closest = tempForDirCheck.mag();
+            //fill(255,0,255);
+            //ellipse(planePos.x+deltaX-xShiftForTesting, planePos.y+deltaY, 10,10);
+          }
+        }
+      }
+      //bottom side
+      deltaY = ((y+hei)*parnetMap.getUnitLength() - planePos.y);
+      deltaX = deltaY/slope;
+      
+      
+      interLoc = planePos.x + deltaX;
+      if(interLoc>x*parnetMap.getUnitLength() && interLoc< (x+wid)*parnetMap.getUnitLength() ){//withing x range of the left side of the rect
+        PVector tempForDirCheck = new PVector(deltaX,deltaY);
+        if( abs(tempForDirCheck.heading() - planeSight.heading() ) < 0.05 ){//Same direction-ish
+          if( tempForDirCheck.mag()< closest || closest == -1 ){
+            closest = tempForDirCheck.mag();
+            //fill(255,0,255);
+            //ellipse(planePos.x+deltaX-xShiftForTesting, planePos.y+deltaY, 10,10);
+          }
+        }
+      }
+      
+    }
+    
+    return closest;
+    
+  }
+  
+  
   float getDrawX(){
     return x*parnetMap.unitLength;
   }

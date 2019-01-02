@@ -71,6 +71,45 @@ class Map{
    }
  }
  
+ float[] updataPlaneSight(Plane plane){
+   
+   PVector[] planeSights = plane.getSightLines();
+   float[] sightsValues = new float[planeSights.length];
+   for(int i =0; i<sightsValues.length;i++){
+     sightsValues[i] = -1;
+   }
+   int sightsValueIndex = 0;
+   
+   for(MapObstacle obs: obstacles){
+     sightsValueIndex =0;
+     for(PVector sight: planeSights){
+       float value = obs.checkSightIntersection(plane.getPos(),sight,drawShift);
+       if(value==-1){
+         sightsValueIndex++;//do not change value
+       }else {
+         if(value<=plane.getSightDist() ){
+           if(sightsValues[sightsValueIndex]<value/plane.getSightDist() || sightsValues[sightsValueIndex]==-1){
+             sightsValues[sightsValueIndex] = value/plane.getSightDist();
+             sightsValueIndex++;
+             
+             //debugging drawing
+             PVector copyOfSight = sight.copy().normalize();
+             copyOfSight.mult(value);
+             fill(255,255,0,125);
+             ellipse(plane.getPos().x + copyOfSight.x - drawShift, plane.getPos().y + copyOfSight.y, 10,10);
+           }
+         } else {
+           sightsValueIndex++;//do not change value
+         }
+       }
+       
+     }
+       
+   }
+   
+   return sightsValues;
+ }
+ 
  float getUnitLength(){
    return unitLength; 
  }

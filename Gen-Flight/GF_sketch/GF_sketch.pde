@@ -3,10 +3,10 @@ Map testMap;
 void setup(){
   fullScreen(2);//second screen if connected
   PlaneBrain test = new PlaneBrain();
-  Double[] temp = {-1d,0.2d,0.5d,-0.4d,1d};
-  test.setInputLayer(temp  );
+  //Double[] temp = {-1d,0.2d,0.5d,-0.4d,1d};
+  //test.setInputLayer(temp  );
   test.computeNet();
-  test.visualize(0,0,900,900);
+  test.visualize(0,0,700,700);
   
   testMap = new Map(0,0,width*0.75,height,150);
   testMap.testDrawlines();
@@ -25,6 +25,9 @@ void draw(){
     delay(500);
   }
   background(255);
+  
+  testPlane.drawBrian(width*0.75,0,width*0.25,height*0.5);
+  
   float shift = testMap.shiftToLeader(testPlane.getPos().x);
   testPlane.setShift(shift);
   
@@ -47,6 +50,5 @@ void draw(){
   } else {
     testPlane.fly(fightDir.coast,testMap);
   }
-  testPlane.drawPlane();
-    
+  
 }

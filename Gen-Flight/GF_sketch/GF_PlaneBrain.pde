@@ -1,7 +1,8 @@
 //This is the network part
-final int inputLayerLength = 5;
-final int lowwerHiddenLayerLength = 20;
-final int upperHiddenLayyerLength = 20;
+final int nonSightInput = 4;
+final int inputLayerLength = sightNumber+nonSightInput;//sightNumber + 4
+final int lowwerHiddenLayerLength = 10;
+final int upperHiddenLayyerLength = 10;
 final int outputLayerLength = 5;
 
 enum layerType{
@@ -92,7 +93,7 @@ class PlaneBrain{
     
   }
   
-  void setInputLayer( Double[] values ){
+  void setInputLayer( float[] values ){
     for(int i =0; i <min(inputLayerLength,values.length);i++){
       inputLayer[i].setInputNode( values[i] );
     }

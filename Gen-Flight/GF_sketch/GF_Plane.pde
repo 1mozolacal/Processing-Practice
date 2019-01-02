@@ -4,9 +4,9 @@ final float maxBack = 0.25;
 final float slowDownRateStart = 0.97;
 final float slowDownRateIncrease = 0.002;
 final float radius = 10;
-final float sightAngle = 0;
-final float sightNumber = 0;
-final float sightDistane = 0;
+final float sightAngle = 120;
+final int sightNumber = 21;
+final float sightDistane = 150;
 
 public enum fightDir{
   forward,left,right,back,coast
@@ -19,11 +19,26 @@ class Plane{
   PVector heading = new PVector(1,0);
   PVector position = new PVector(150,250);
   float drawShift = 0;
+  PlaneBrain brain;
   
   Plane(){
-     
+     brain = new PlaneBrain();
   }
   
+  
+  void checkSightLines(Map mapRef){
+    float[] returnSightLines = mapRef.updataPlaneSight(this);
+    float[] networkInput = new float[inputLayerLength];
+    networkInput[0] = atan(position.x);
+    networkInput[1] = atan(position.y);
+    networkInput[2] = atan(velocity.x);
+    networkInput[3] = atan(velocity.y);
+    for(int i = nonSightInput; i <inputLayerLength;i++){
+      networkInput[i] = returnSightLines[i-nonSightInput];
+    }
+    brain.setInputLayer(networkInput);
+    brain.computeNet();
+  }
   
   void fly(fightDir dir, Map mapRef){
     
@@ -55,9 +70,7 @@ class Plane{
        velocity.add(copy); 
       }
     }
-    
-    //constant slow down
-    velocity.mult(slowDownRateStart-slowDownRateIncrease*velocity.mag());//1% decrease in speed
+    velocity.mult(slowDownRateStart-slowDownRateIncrease*velocity.mag());//constant slow down - 1% decrease in speed 
     
     //debugging arrow
     //stroke(0);
@@ -68,25 +81,83 @@ class Plane{
     position.add(velocity);
     
     mapRef.checkHit(this);
+    
+    drawPlane();
+    checkSightLines(mapRef);
+    
+    
   }//end of fly function
   
   void drawPlane(){
     noStroke();
-    fill(255,0,0,225);
+    fill(255,0,0,125);
     position.x-= drawShift;
     PVector front = PVector.add(position, heading.copy().normalize().mult(radius) );
     PVector left = PVector.add(position, heading.copy().normalize().rotate(PI*3.0/4.0).mult(radius) );
     PVector right = PVector.add(position, heading.copy().normalize().rotate(-PI*3.0/4.0).mult(radius) );
-    position.x += drawShift;
+    
     triangle(front.x,front.y, left.x,left.y, right.x,right.y );
+    
+    //draw sight lines
+    stroke(0,0,0,50);
+    PVector sightLine = new PVector(sightDistane,0);
+    sightLine.rotate( heading.heading() ) ;
+    if(sightNumber%2==1){//is even
+      line(position.x,position.y, position.x + sightLine.x, position.y+sightLine.y);
+    }
+    for(int i=0;i<(int)sightNumber/2;i++){
+      float rot = (PI/180.0) *( (sightAngle/2.0) - i * ((sightAngle/2.0)/((int)sightNumber/2)) );
+      sightLine.rotate(rot);
+      line(position.x,position.y, position.x + sightLine.x, position.y+sightLine.y);
+      sightLine.rotate(-2*rot);
+      line(position.x,position.y, position.x + sightLine.x, position.y+sightLine.y);
+      sightLine.rotate(rot);
+    }
+    
+    position.x += drawShift;
+    
   }
+  
+  void drawBrian(float x,float y, float wid, float hei){
+    brain.visualize(x,y,wid,hei);
+  }
+  
+  PVector[] getSightLines(){
+    
+    PVector[] returnPVec = new PVector[(int)sightNumber];
+    
+    PVector sightLine = new PVector(sightDistane,0);
+    sightLine.rotate( heading.heading() ) ;
+    if(sightNumber%2==1){//is even
+      returnPVec[(int)sightNumber-1] = sightLine.copy();
+    }
+    for(int i=0;i<(int)sightNumber/2;i++){
+      float rot = (PI/180.0) *( (sightAngle/2.0) - i * ((sightAngle/2.0)/((int)sightNumber/2)) );
+      sightLine.rotate(rot);
+      returnPVec[i*2] = sightLine.copy();
+      sightLine.rotate(-2*rot);
+      returnPVec[i*2+1] = sightLine.copy();
+      sightLine.rotate(rot);
+    }
+    
+    return returnPVec;
+  }
+  
   
   PVector getPos(){
     return position; 
   }
   
+  PVector getHeading(){
+    return heading;
+  }
+  
   float getRadius(){
     return radius;
+  }
+  
+  float getSightDist(){
+   return sightDistane; 
   }
   
   void crash(){
