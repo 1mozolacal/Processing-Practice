@@ -110,7 +110,7 @@ class MapObstacle{
       interLoc = planePos.x + deltaX;
       if(interLoc>x*parnetMap.getUnitLength() && interLoc< (x+wid)*parnetMap.getUnitLength() ){//withing x range of the left side of the rect
         PVector tempForDirCheck = new PVector(deltaX,deltaY);
-        if( abs(tempForDirCheck.heading() - planeSight.heading() ) < 0.05 ){//Same direction-ish
+        if( abs(tempForDirCheck.heading() - planeSight.heading() ) < 0.5 ){//Same direction-ish
           if( tempForDirCheck.mag()< closest || closest == -1 ){
             closest = tempForDirCheck.mag();
             //fill(255,0,255);

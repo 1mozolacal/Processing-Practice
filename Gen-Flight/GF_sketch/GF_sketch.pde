@@ -1,4 +1,5 @@
 Map testMap;
+Plane[] airForce = new Plane[325];
 
 void setup(){
   fullScreen(2);//second screen if connected
@@ -10,6 +11,11 @@ void setup(){
   
   testMap = new Map(0,0,width*0.75,height,150);
   testMap.testDrawlines();
+  
+
+  for(int i=0; i< airForce.length;i++){
+    airForce[i] = new Plane();
+  }
   
   delay(500);
 }
@@ -34,7 +40,14 @@ void draw(){
   testMap.drawMap();
   testScroll++;
   
+  for(int i =0; i < airForce.length;i++){
+    airForce[i].setShift(shift);
+    airForce[i].aiFly(testMap);
+  }
+  
+  //testPlane.aiFly(testMap);
   //background(100);
+  
   if(keyPressed){
     if(key == 'a' ){
       testPlane.fly(fightDir.left,testMap);

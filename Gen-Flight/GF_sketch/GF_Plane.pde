@@ -6,7 +6,7 @@ final float slowDownRateIncrease = 0.002;
 final float radius = 10;
 final float sightAngle = 120;
 final int sightNumber = 21;
-final float sightDistane = 150;
+final float sightDistane = 1150;
 
 public enum fightDir{
   forward,left,right,back,coast
@@ -29,15 +29,28 @@ class Plane{
   void checkSightLines(Map mapRef){
     float[] returnSightLines = mapRef.updataPlaneSight(this);
     float[] networkInput = new float[inputLayerLength];
-    networkInput[0] = atan(position.x);
-    networkInput[1] = atan(position.y);
-    networkInput[2] = atan(velocity.x);
-    networkInput[3] = atan(velocity.y);
+    networkInput[0] = (position.x)/(mapRef.getWidth());
+    networkInput[1] = (position.y)/(mapHeight*mapRef.getUnitLength());
+    networkInput[2] = (float) (atan(velocity.x)*2.0/PI);
+    networkInput[3] = (float) (atan(velocity.y)*2.0/PI);
     for(int i = nonSightInput; i <inputLayerLength;i++){
       networkInput[i] = returnSightLines[i-nonSightInput];
     }
     brain.setInputLayer(networkInput);
     brain.computeNet();
+  }
+  
+  void aiFly(Map mapRef){
+    Double[] output = brain.readOutputAsArray();
+    int lowest = 0;
+    Double lowestValue = output[0];
+    for(int i =1; i< output.length; i++){
+      if(output[i]<lowestValue){
+        lowestValue = output[i];
+        lowest = i;
+      }
+    }
+    fly(fightDir.values()[lowest],mapRef);
   }
   
   void fly(fightDir dir, Map mapRef){
@@ -98,6 +111,7 @@ class Plane{
     
     triangle(front.x,front.y, left.x,left.y, right.x,right.y );
     
+    /*
     //draw sight lines
     stroke(0,0,0,50);
     PVector sightLine = new PVector(sightDistane,0);
@@ -113,7 +127,7 @@ class Plane{
       line(position.x,position.y, position.x + sightLine.x, position.y+sightLine.y);
       sightLine.rotate(rot);
     }
-    
+    */
     position.x += drawShift;
     
   }
@@ -162,7 +176,7 @@ class Plane{
   
   void crash(){
    alive = false; 
-   print("crash");
+   //print("crash");
   }
   
   void setShift(float set){
