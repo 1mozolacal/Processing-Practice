@@ -103,7 +103,8 @@ class Plane{
   
   void drawPlane(){
     noStroke();
-    fill(255,0,0,125);
+    if(humanDriven){ fill(0,255,0); }
+    else { fill(255,0,0,125); }
     position.x-= drawShift;
     PVector front = PVector.add(position, heading.copy().normalize().mult(radius) );
     PVector left = PVector.add(position, heading.copy().normalize().rotate(PI*3.0/4.0).mult(radius) );
@@ -111,7 +112,7 @@ class Plane{
     
     triangle(front.x,front.y, left.x,left.y, right.x,right.y );
     
-    /*
+    
     //draw sight lines
     stroke(0,0,0,50);
     PVector sightLine = new PVector(sightDistane,0);
@@ -127,7 +128,7 @@ class Plane{
       line(position.x,position.y, position.x + sightLine.x, position.y+sightLine.y);
       sightLine.rotate(rot);
     }
-    */
+    
     position.x += drawShift;
     
   }
@@ -177,6 +178,10 @@ class Plane{
   void crash(){
    alive = false; 
    //print("crash");
+  }
+  
+  void setHumanControl(boolean val){
+    humanDriven = val;
   }
   
   void setShift(float set){

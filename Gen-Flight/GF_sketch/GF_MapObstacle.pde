@@ -113,8 +113,8 @@ class MapObstacle{
         if( abs(tempForDirCheck.heading() - planeSight.heading() ) < 0.5 ){//Same direction-ish
           if( tempForDirCheck.mag()< closest || closest == -1 ){
             closest = tempForDirCheck.mag();
-            //fill(255,0,255);
-            //ellipse(planePos.x+deltaX-xShiftForTesting, planePos.y+deltaY, 10,10);
+            fill(255,0,255);
+            ellipse(planePos.x+deltaX-xShiftForTesting, planePos.y+deltaY, 10,10);
           }
         }
       }

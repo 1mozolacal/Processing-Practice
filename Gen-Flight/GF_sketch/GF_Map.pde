@@ -93,10 +93,10 @@ class Map{
              sightsValueIndex++;
              
              //debugging drawing
-             //PVector copyOfSight = sight.copy().normalize();
-             //copyOfSight.mult(value);
-             //fill(255,255,0,125);
-             //ellipse(plane.getPos().x + copyOfSight.x - drawShift, plane.getPos().y + copyOfSight.y, 20,20);
+             PVector copyOfSight = sight.copy().normalize();
+             copyOfSight.mult(value);
+             fill(255,255,0,125);
+             ellipse(plane.getPos().x + copyOfSight.x - drawShift, plane.getPos().y + copyOfSight.y, 20,20);
            }
          } else {
            sightsValueIndex++;//do not change value

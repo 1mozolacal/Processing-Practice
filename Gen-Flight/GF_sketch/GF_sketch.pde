@@ -1,7 +1,8 @@
 Map testMap;
-Plane[] airForce = new Plane[325];
+Plane[] airForce = new Plane[1];
 
 void setup(){
+  
   fullScreen(2);//second screen if connected
   PlaneBrain test = new PlaneBrain();
   //Double[] temp = {-1d,0.2d,0.5d,-0.4d,1d};
@@ -26,7 +27,9 @@ Plane testPlane = new Plane();
 
 
 void draw(){
+  println(frameRate);
   if(firstRun){
+    testPlane.setHumanControl(true);
     firstRun =false;
     delay(500);
   }
