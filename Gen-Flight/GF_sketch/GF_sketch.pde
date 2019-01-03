@@ -1,5 +1,12 @@
 Map testMap;
-Plane[] airForce = new Plane[325];
+int numberOfPlanes = 325;
+ArrayList<Plane> airForce = new ArrayList<Plane>();
+int generation = 0;
+float runTimeLeft = 0;
+float rountTimePerUnit = 0.05;
+float lastTime = -1;
+boolean runOnGoing = true;
+
 
 void setup(){
   fullScreen(2);//second screen if connected
@@ -12,9 +19,10 @@ void setup(){
   testMap = new Map(0,0,width*0.75,height,150);
   testMap.testDrawlines();
   
-
-  for(int i=0; i< airForce.length;i++){
-    airForce[i] = new Plane();
+  runTimeLeft = rountTimePerUnit * testMap.getTrackLength();
+  
+  for(int i=0; i< numberOfPlanes;i++){
+    airForce.add(new Plane() );
   }
   
   delay(500);
@@ -25,26 +33,29 @@ float testScroll = 0;
 Plane testPlane = new Plane();
 
 
+
 void draw(){
   if(firstRun){
     firstRun =false;
     delay(500);
   }
   background(255);
-  
+
   testPlane.drawBrian(width*0.75,0,width*0.25,height*0.5);
   
-  float shift = testMap.shiftToLeader(testPlane.getPos().x);
-  testPlane.setShift(shift);
+  
+  
   
   testMap.drawMap();
-  testScroll++;
+  float shift = testMap.shiftToLeader(airForce);
+  testPlane.setShift(shift);
   
-  for(int i =0; i < airForce.length;i++){
-    airForce[i].setShift(shift);
-    airForce[i].aiFly(testMap);
+  if(runOnGoing){
+    for(int i =0; i < airForce.size();i++){
+      airForce.get(i).setShift(shift);
+      airForce.get(i).aiFly(testMap);
+    }
   }
-  
   //testPlane.aiFly(testMap);
   //background(100);
   
@@ -63,5 +74,82 @@ void draw(){
   } else {
     testPlane.fly(fightDir.coast,testMap);
   }
+  
+  createUI(width*0.75,height*0.5,width*0.25,height*0.5);
+}
+
+void createUI(float x, float y, float wid, float hei){
+  fill(0,125,255);
+  rect(x,y,wid,hei);
+  
+  stroke(0);
+  fill(0);
+  float textSpace = hei*0.05;
+  textSize(textSpace);
+  text("Gen:" + generation, x + wid*0.1,y + textSpace);
+  if(runOnGoing){
+    if(lastTime != -1){
+      runTimeLeft-= millis()/1000.0 - lastTime;
+      if(runTimeLeft<=0){
+        generation++;
+        lastTime = -1;
+        runOnGoing=false;
+        runTimeLeft = rountTimePerUnit * testMap.getTrackLength();
+        newGen();
+      }
+    }
+    lastTime = millis()/1000.0;
+  }
+  text("Time Left:" + runTimeLeft, x + wid*0.1,y + textSpace*2);
+}
+
+void newGen(){
+  Plane[] discards = new Plane[numberOfPlanes/2];
+  for( Plane plane: airForce){
+    int spot = -1;
+    for(int i =0; i<discards.length;i++){
+      if(discards[i] == null){
+       spot = i;
+       break;
+      }
+      else if(plane.getScore() < discards[i].getScore()){
+       spot = i;
+       break;
+      }
+    }
+    if(spot!= -1){
+     for(int i = discards.length-1;i >spot;i--){
+       discards[i] = discards[i-1];
+     }
+     discards[spot] = plane;
+    }
+    
+  }
+  
+  for(Plane removeThis: discards){
+    airForce.remove(removeThis);
+  }
+  
+  Plane[] newBorns = new Plane[numberOfPlanes/2];
+  for(int i =0; i < (int)(numberOfPlanes/2); i++){
+    double methodRandomizer = Math.random();
+    Plane newBorn;
+    if(methodRandomizer>0.5){//two parnet method
+      newBorn = new Plane(airForce.get((int) (Math.random()*airForce.size())), airForce.get((int) (Math.random()*airForce.size())) );
+    }else {//one parnet method
+      newBorn = new Plane(airForce.get((int) (Math.random()*airForce.size())) );
+    }
+    newBorns[i] = newBorn;
+  }
+  
+  for(Plane addThis:newBorns){
+   airForce.add(addThis); 
+  }
+  
+  //reset the planes
+  for(Plane plane: airForce){
+   plane.newRound(); 
+  }
+  runOnGoing = true;
   
 }

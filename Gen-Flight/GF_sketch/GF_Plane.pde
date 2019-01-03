@@ -19,12 +19,20 @@ class Plane{
   PVector heading = new PVector(1,0);
   PVector position = new PVector(150,250);
   float drawShift = 0;
+  float score = 0;
   PlaneBrain brain;
   
   Plane(){
      brain = new PlaneBrain();
   }
   
+  Plane(Plane parnet){
+    brain = new PlaneBrain(parnet.getBrain());
+  }
+  
+  Plane(Plane dad, Plane mom){
+    brain = new PlaneBrain(dad.getBrain(), mom.getBrain() );
+  }
   
   void checkSightLines(Map mapRef){
     float[] returnSightLines = mapRef.updataPlaneSight(this);
@@ -51,6 +59,7 @@ class Plane{
       }
     }
     fly(fightDir.values()[lowest],mapRef);
+    
   }
   
   void fly(fightDir dir, Map mapRef){
@@ -98,7 +107,10 @@ class Plane{
     drawPlane();
     checkSightLines(mapRef);
     
-    
+    float currentScore = position.x/mapRef.getUnitLength();
+    if(currentScore>score){
+     score=currentScore; 
+    }
   }//end of fly function
   
   void drawPlane(){
@@ -174,9 +186,29 @@ class Plane{
    return sightDistane; 
   }
   
+  boolean isAlive(){
+   return alive; 
+  }
+  
+  float getScore(){
+   return score; 
+  }
+  
+  PlaneBrain getBrain(){
+   return brain; 
+  }
+  
   void crash(){
    alive = false; 
    //print("crash");
+  }
+  
+  void newRound(){
+    score = 0;
+    alive = true;
+    velocity = new PVector(0,0);
+    heading = new PVector(1,0);
+    position = new PVector(150,250);
   }
   
   void setShift(float set){

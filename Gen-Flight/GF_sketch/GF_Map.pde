@@ -126,7 +126,19 @@ class Map{
   return drawWidth; 
  }
  
- float shiftToLeader(float xOfLeader){
+ float getTrackLength(){
+  return mapWidth; 
+ }
+ 
+ float shiftToLeader(ArrayList<Plane> planes){
+   float xOfLeader = 0;
+   
+   for(Plane plane:planes){
+     if(plane.isAlive() && plane.position.x > xOfLeader ){
+       xOfLeader = plane.position.x;
+     }
+   }
+   
    float followAt = 0.25;//a Percentage
    float shift  = max(0, xOfLeader - (drawWidth*followAt + drawX) );
    drawShift = shift;
