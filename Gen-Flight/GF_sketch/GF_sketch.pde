@@ -1,12 +1,16 @@
 Map testMap;
-int numberOfPlanes = 325;
+int numberOfPlanes = 525;
+int numberOfPlanesAlive = numberOfPlanes;
+float highestScore = 0;
+float leaderScore = 0;
 ArrayList<Plane> airForce = new ArrayList<Plane>();
 int generation = 0;
 float runTimeLeft = 0;
-float rountTimePerUnit = 0.05;
+float rountTimePerUnit = 0.4;
 float lastTime = -1;
 boolean runOnGoing = true;
 
+String loadMap = "GFMapmaze";//"no" for not loading the map the name of the map if you want to load it **Map need to be in the map folder**
 
 void setup(){
   fullScreen(2);//second screen if connected
@@ -16,8 +20,20 @@ void setup(){
   test.computeNet();
   test.visualize(0,0,700,700);
   
-  testMap = new Map(0,0,width*0.75,height,150);
-  testMap.testDrawlines();
+  if(!loadMap.equals("no")){
+    String[] loadedMap = loadStrings("maps/"+loadMap+ ".txt");
+    int trackLen = Integer.parseInt(loadedMap[0]);
+    testMap = new Map(0,0,width*0.75,height,trackLen);
+    for(int i =1; i < loadedMap.length;i++){
+      String[] obsInfo = loadedMap[i].split(",");
+      testMap.addObject(Integer.parseInt(obsInfo[0]),Integer.parseInt(obsInfo[1]),Integer.parseInt(obsInfo[2]),Integer.parseInt(obsInfo[3]));
+    }
+  } else{
+    testMap = new Map(0,0,width*0.75,height,150);
+  }
+  
+  
+  //testMap.testDrawlines();
   
   runTimeLeft = rountTimePerUnit * testMap.getTrackLength();
   
@@ -41,18 +57,26 @@ void draw(){
   }
   background(255);
 
-  testPlane.drawBrian(width*0.75,0,width*0.25,height*0.5);
+  //testPlane.drawBrian(width*0.75,0,width*0.25,height*0.5);
   
   
   
   
   testMap.drawMap();
-  float shift = testMap.shiftToLeader(airForce);
-  testPlane.setShift(shift);
+  Object[] leaderInfo = testMap.shiftToLeader(airForce);
+  testPlane.setShift((float)leaderInfo[0]);
+  if(leaderInfo[1] !=null){
+    leaderScore = ((Plane)leaderInfo[1]).getScore(); 
+    if(leaderScore>highestScore){
+     highestScore = leaderScore; 
+    }
+    ((Plane)leaderInfo[1]).drawBrian(width*0.75,0,width*0.25,height*0.5);
+  }
+  
   
   if(runOnGoing){
     for(int i =0; i < airForce.size();i++){
-      airForce.get(i).setShift(shift);
+      airForce.get(i).setShift((float)leaderInfo[0]);
       airForce.get(i).aiFly(testMap);
     }
   }
@@ -91,53 +115,63 @@ void createUI(float x, float y, float wid, float hei){
     if(lastTime != -1){
       runTimeLeft-= millis()/1000.0 - lastTime;
       if(runTimeLeft<=0){
-        generation++;
-        lastTime = -1;
-        runOnGoing=false;
-        runTimeLeft = rountTimePerUnit * testMap.getTrackLength();
         newGen();
       }
     }
     lastTime = millis()/1000.0;
   }
   text("Time Left:" + runTimeLeft, x + wid*0.1,y + textSpace*2);
+  text("Alive:" + numberOfPlanesAlive, x + wid*0.1,y + textSpace*3);
+  text("Leader score:" + leaderScore, x + wid*0.1,y + textSpace*4);
+  text("Highest Score:" + highestScore, x + wid*0.1,y + textSpace*5);
 }
 
 void newGen(){
-  Plane[] discards = new Plane[numberOfPlanes/2];
+  generation++;
+  lastTime = -1;
+  runOnGoing=false;
+  runTimeLeft = rountTimePerUnit * testMap.getTrackLength();
+  numberOfPlanesAlive = numberOfPlanes;
+  highestScore = 0;
+  
+  int killAmount = (int) (numberOfPlanes*0.8);
+  Plane[] rankLowToHigh = new Plane[airForce.size()];
   for( Plane plane: airForce){
     int spot = -1;
-    for(int i =0; i<discards.length;i++){
-      if(discards[i] == null){
+    for(int i =0; i<rankLowToHigh.length;i++){
+      if(rankLowToHigh[i] == null){
        spot = i;
        break;
       }
-      else if(plane.getScore() < discards[i].getScore()){
+      else if(plane.getScore() < rankLowToHigh[i].getScore()){
        spot = i;
        break;
       }
     }
     if(spot!= -1){
-     for(int i = discards.length-1;i >spot;i--){
-       discards[i] = discards[i-1];
+     for(int i = rankLowToHigh.length-1;i >spot;i--){
+       rankLowToHigh[i] = rankLowToHigh[i-1];
      }
-     discards[spot] = plane;
+     rankLowToHigh[spot] = plane;
     }
     
   }
   
-  for(Plane removeThis: discards){
-    airForce.remove(removeThis);
+  for(int i = 0; i<killAmount; i++){
+    airForce.remove(rankLowToHigh[i]);
   }
   
-  Plane[] newBorns = new Plane[numberOfPlanes/2];
-  for(int i =0; i < (int)(numberOfPlanes/2); i++){
+  Plane[] newBorns = new Plane[killAmount];
+  int bellAmount = 3;
+  for(int i =0; i < newBorns.length; i++){
     double methodRandomizer = Math.random();
     Plane newBorn;
-    if(methodRandomizer>0.5){//two parnet method
-      newBorn = new Plane(airForce.get((int) (Math.random()*airForce.size())), airForce.get((int) (Math.random()*airForce.size())) );
+    if(methodRandomizer<0.1){//two parnet method removed for debugging 
+      int randomDad = (int)(killAmount + (rankLowToHigh.length - killAmount) * pow((float)Math.random(),bellAmount) );
+      int randomMom = (int)(killAmount + (rankLowToHigh.length - killAmount) * pow((float)Math.random(),bellAmount) );
+      newBorn = new Plane(rankLowToHigh[randomDad], rankLowToHigh[randomMom] );
     }else {//one parnet method
-      newBorn = new Plane(airForce.get((int) (Math.random()*airForce.size())) );
+      newBorn = new Plane(rankLowToHigh[(int)(killAmount + (rankLowToHigh.length - killAmount) * pow((float)Math.random(),bellAmount) )] );
     }
     newBorns[i] = newBorn;
   }
@@ -151,5 +185,14 @@ void newGen(){
    plane.newRound(); 
   }
   runOnGoing = true;
+  
+}
+
+void planeDied(){
+  if(numberOfPlanesAlive <= 1){
+   newGen(); 
+  }else{
+    numberOfPlanesAlive--;
+  }
   
 }

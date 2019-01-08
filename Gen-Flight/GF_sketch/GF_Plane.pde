@@ -6,7 +6,7 @@ final float slowDownRateIncrease = 0.002;
 final float radius = 10;
 final float sightAngle = 120;
 final int sightNumber = 21;
-final float sightDistane = 1150;
+final float sightDistane = 250;
 
 public enum fightDir{
   forward,left,right,back,coast
@@ -20,6 +20,9 @@ class Plane{
   PVector position = new PVector(150,250);
   float drawShift = 0;
   float score = 0;
+  float timeSinceHighVel = -1;
+  float timeSinceScoreInc = -1;
+  
   PlaneBrain brain;
   
   Plane(){
@@ -63,6 +66,18 @@ class Plane{
   }
   
   void fly(fightDir dir, Map mapRef){
+    
+    if(timeSinceHighVel == -1){
+     timeSinceHighVel = millis(); 
+    } else {
+      if(velocity.mag() > 0.25){
+       timeSinceHighVel = millis(); 
+      }
+      if(millis() - timeSinceHighVel > 3000){
+        this.crash();
+      }
+    }
+    
     
     if(!alive){
       return;
@@ -110,6 +125,13 @@ class Plane{
     float currentScore = position.x/mapRef.getUnitLength();
     if(currentScore>score){
      score=currentScore; 
+     timeSinceScoreInc = millis();
+    }
+    if(timeSinceScoreInc == -1){
+      timeSinceScoreInc = millis();
+    }
+    if(millis()-timeSinceScoreInc > 5000){
+     this.crash(); 
     }
   }//end of fly function
   
@@ -198,9 +220,16 @@ class Plane{
    return brain; 
   }
   
+  void complete(float timeLeft, float timeTotal){
+    float timeTaken = timeTotal-timeLeft;
+    score*= (timeTotal/timeTaken);
+    this.crash();
+  }
+  
   void crash(){
+   if(!alive){ return;}
    alive = false; 
-   //print("crash");
+   planeDied();
   }
   
   void newRound(){

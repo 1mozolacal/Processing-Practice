@@ -21,7 +21,7 @@ class Map{
    unitLength = hei/mapHeight;
    
    float boarderWidth = 2;
-   obstacles.add( new MapObstacle(90f,20f,10f,40f,this) );
+   //obstacles.add( new MapObstacle(90f,20f,10f,40f,this) );
    obstacles.add( new MapObstacle(0f,0f,boarderWidth,mapHeight,this) );//back boarder
    obstacles.add( new MapObstacle(0f,0f,lenghtOfTrack,boarderWidth,this) );//top boarder
    obstacles.add( new MapObstacle(0f,mapHeight-boarderWidth,lenghtOfTrack,boarderWidth,this) );//top boarder
@@ -38,6 +38,10 @@ class Map{
      line(drawX+(xDir*unitLength),drawY,drawX+(xDir*unitLength),drawY+drawHeight);
    }
    
+ }
+ 
+ void loadMap(String fileName){
+   String[] lines = loadStrings(fileName);
  }
  
  void drawMap(){
@@ -59,6 +63,11 @@ class Map{
  }
  
  void checkHit(Plane plane){
+   if(plane.position.x/unitLength >= mapWidth){
+     plane.complete(runTimeLeft, rountTimePerUnit* mapWidth);
+   }
+   
+   
    for(MapObstacle obs: obstacles){
      
      PVector planePos = plane.getPos();
@@ -88,10 +97,9 @@ class Map{
          sightsValueIndex++;//do not change value
        }else {
          if(value<=plane.getSightDist() ){
-           if(sightsValues[sightsValueIndex]<value/plane.getSightDist() || sightsValues[sightsValueIndex]==-1){
-             sightsValues[sightsValueIndex] = value/plane.getSightDist();
+           if(sightsValues[sightsValueIndex]>1-(value/plane.getSightDist()) || sightsValues[sightsValueIndex]==-1){
+             sightsValues[sightsValueIndex] = 1-(value/plane.getSightDist());
              sightsValueIndex++;
-             
              //debugging drawing
              //PVector copyOfSight = sight.copy().normalize();
              //copyOfSight.mult(value);
@@ -108,6 +116,10 @@ class Map{
    }
    
    return sightsValues;
+ }
+ 
+ void addObject(float x, float y, float wid, float hei){
+   obstacles.add( new MapObstacle(x,y,wid,hei,this) );
  }
  
  float getUnitLength(){
@@ -130,19 +142,22 @@ class Map{
   return mapWidth; 
  }
  
- float shiftToLeader(ArrayList<Plane> planes){
-   float xOfLeader = 0;
-   
+ Object[] shiftToLeader(ArrayList<Plane> planes){
+   float[] leaderInfo = {0,0};//0= xshift, 1=score
+   Plane leader = null;
    for(Plane plane:planes){
-     if(plane.isAlive() && plane.position.x > xOfLeader ){
-       xOfLeader = plane.position.x;
+     if(plane.isAlive() && plane.position.x > leaderInfo[0] ){
+       leaderInfo[0] = plane.position.x;
+       leaderInfo[1] = plane.getScore();
+       leader = plane;
      }
    }
    
-   float followAt = 0.25;//a Percentage
-   float shift  = max(0, xOfLeader - (drawWidth*followAt + drawX) );
+   float followAt = 0.75;//a Percentage
+   float shift  = max(0, leaderInfo[0] - (drawWidth*followAt + drawX) );
    drawShift = shift;
-   return shift;
+   Object[] returnInfo = {shift,leader};
+   return returnInfo;
  }
  
 }//end of Map class

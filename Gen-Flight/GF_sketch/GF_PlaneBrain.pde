@@ -4,8 +4,9 @@ final int inputLayerLength = sightNumber+nonSightInput;//sightNumber + 4
 final int lowwerHiddenLayerLength = 10;
 final int upperHiddenLayyerLength = 10;
 final int outputLayerLength = 5;
-float changeAmount = 0.02;
-float mutaionRate = 0.05;
+final int numberOfHiddenLayers = 0; //max two
+float changeAmount = 0.03;
+float mutaionRate = 0.00001;
 float mutationMult = 15;
 
 enum layerType{
@@ -28,56 +29,46 @@ class PlaneBrain{
   //with random connection values
   PlaneBrain(){
     
+    BrainNode[][] arrayOfLayersForInit = getBrainNodesInArray();
     //OPT this
+    BrainNode[] blankRefForInputLayerNodes = new BrainNode[0];//for input layer
+    for( int lay =0; lay < arrayOfLayersForInit.length;lay++){
+      
+      for(int i = 0; i < arrayOfLayersForInit[lay].length; i++){
+        if(lay!=0){
+        Double[] randomConnectionValues = new Double[arrayOfLayersForInit[lay-1].length]; 
+        for(int j =0; j <arrayOfLayersForInit[lay-1].length; j++){
+          randomConnectionValues[j] = (double)random(-1,1);
+        }
+          layerType checkIfOutputType = layerType.values()[lay];
+          if(lay == arrayOfLayersForInit.length-1 ){ checkIfOutputType = layerType.output;}
+          arrayOfLayersForInit[lay][i] = new BrainNode(arrayOfLayersForInit[lay-1], randomConnectionValues ,  checkIfOutputType);
+        } else {
+          inputLayer[i] = new BrainNode(blankRefForInputLayerNodes,layerType.input);
+        }
+      }//end of for loop for a specific layer
     
-    //init input layer
-    BrainNode[] blankRefForInputLayerNodes = new BrainNode[0];
-    for(int i = 0; i <inputLayerLength;i++){
-      inputLayer[i] = new BrainNode(blankRefForInputLayerNodes,layerType.input);
-    }
+    }// for loop for the layer selection
     
-    //int lowwer hidden layer
-    for(int i = 0; i < lowwerHiddenLayerLength; i++){
-      Double[] randomConnectionValues = new Double[inputLayerLength];
-      for(int j =0; j <inputLayerLength; j++){
-        randomConnectionValues[j] = (double)random(-1,1);
-      }
-      lowwerHiddenLayer[i] = new BrainNode(inputLayer, randomConnectionValues , layerType.lowHidden);
-    }
-    
-    //int higher hidden layer
-    for(int i = 0; i < upperHiddenLayyerLength; i++){
-      Double[] randomConnectionValues = new Double[lowwerHiddenLayerLength];
-      for(int j =0; j <lowwerHiddenLayerLength; j++){
-        randomConnectionValues[j] = (double)random(-1,1);
-      }
-      upperHiddenLayyer[i] = new BrainNode(lowwerHiddenLayer, randomConnectionValues , layerType.highHidden);
-    }
-    
-    //int lowwer hidden layer
-    for(int i = 0; i < outputLayerLength; i++){
-      Double[] randomConnectionValues = new Double[upperHiddenLayyerLength];
-      for(int j =0; j <upperHiddenLayyerLength; j++){
-        randomConnectionValues[j] = (double)random(-1,1);
-      }
-      outputLayer[i] = new BrainNode(upperHiddenLayyer, randomConnectionValues , layerType.output);
-    }
-    
-    //finished init
+   
   }//end of PlaneBrain()
   
   //Clone
   PlaneBrain(PlaneBrain parent){
-    this();
+    this();//init the layers and connections
     ArrayList<BrainNode[]> layersRef = new ArrayList<BrainNode[]>();
-    layersRef.add(lowwerHiddenLayer);
-    layersRef.add(upperHiddenLayyer);
+    if(numberOfHiddenLayers>=1){
+      layersRef.add(lowwerHiddenLayer);
+      if(numberOfHiddenLayers>=2){
+        layersRef.add(upperHiddenLayyer);
+      }
+    }
     layersRef.add(outputLayer);
     
-    for(int i =0; i <3; i ++){
+    for(int i =1; i <layersRef.size(); i ++){
       for(int j = 0; j<layersRef.get(i).length;j++){
        Double[] nodeConnectionsParnet = parent.getLayerConnection(i,j); 
-       Double[] newNodeConnections = new Double[nodeConnectionsParnet.length];
+       Double[] newNodeConnections = new Double[nodeConnectionsParnet.length]; 
        for(int con = 0; con< nodeConnectionsParnet.length; con++){
          double value = nodeConnectionsParnet[con];
          if(Math.random()<mutaionRate){
@@ -103,17 +94,27 @@ class PlaneBrain{
   PlaneBrain(PlaneBrain mom,PlaneBrain dad){
     this();
     ArrayList<BrainNode[]> layersRef = new ArrayList<BrainNode[]>();
-    layersRef.add(lowwerHiddenLayer);
-    layersRef.add(upperHiddenLayyer);
+    if(numberOfHiddenLayers>=1){
+      layersRef.add(lowwerHiddenLayer);
+      if(numberOfHiddenLayers>=2){
+        layersRef.add(upperHiddenLayyer);
+      }
+    }
     layersRef.add(outputLayer);
     
-    for(int i =0; i <3; i ++){
+    for(int i =1; i <layersRef.size(); i ++){
       for(int j = 0; j<layersRef.get(i).length;j++){
        Double[] nodeConnectionsMom = mom.getLayerConnection(i,j); 
        Double[] nodeConnectionsDad = dad.getLayerConnection(i,j); 
        Double[] newNodeConnections = new Double[nodeConnectionsMom.length];
        for(int con = 0; con< nodeConnectionsMom.length; con++){
-         double value = (nodeConnectionsMom[con] + nodeConnectionsDad[con])/2.0;
+         double value;
+         if(Math.random() > 0.5){
+           value = nodeConnectionsMom[con];
+         } else {
+           value = nodeConnectionsDad[con];
+         }
+         
          if(Math.random()<mutaionRate){
            value += (Math.random()-0.5)*(2*changeAmount*mutationMult);
          }else {
@@ -137,19 +138,26 @@ class PlaneBrain{
   
   
   //-----------------functions-start------------
+  BrainNode[][] getBrainNodesInArray(){
+    BrainNode[][] returnArr = new BrainNode[2+min(2,numberOfHiddenLayers)][];
+    for(int i = 0; i < returnArr.length;i++){
+      if(i== 0){returnArr[i] = inputLayer;}
+      else if(i== returnArr.length-1 ){returnArr[i] = outputLayer;}
+      else if(i== 1){returnArr[i] = lowwerHiddenLayer;}
+      else if(i== 2){returnArr[i] = upperHiddenLayyer;}
+    }
+    return returnArr;
+  }
+  
+  
   void computeNet(){
     
-    //lowwer layer
-    for(int i=0; i<lowwerHiddenLayerLength;i++){
-      lowwerHiddenLayer[i].calc();
-    }
-    //upper layer
-    for(int i=0; i<upperHiddenLayyerLength;i++){
-      upperHiddenLayyer[i].calc();
-    }
-    //output layer
-    for(int i=0; i<outputLayerLength;i++){
-      outputLayer[i].calc();
+    BrainNode[][] arrays = getBrainNodesInArray();
+    
+    for( int lay = 1; lay< arrays.length;lay++){
+      for(int i=0; i<arrays[lay].length;i++){
+        arrays[lay][i].calc();
+      }
     }
     
   }
@@ -172,14 +180,13 @@ class PlaneBrain{
     fill(200,200,255);
     rect(x,y,wid,hei);
     
-    int[] arrayOfLayerLength = {inputLayerLength,lowwerHiddenLayerLength,upperHiddenLayyerLength,outputLayerLength};
-    BrainNode[][] arrayOfLayer = {inputLayer,lowwerHiddenLayer,upperHiddenLayyer,outputLayer};
+    BrainNode[][] arrayOfLayer = getBrainNodesInArray();
     ArrayList<PVector> previousLayer = new ArrayList<PVector>();
     ArrayList<PVector> previousLayerConstruction = new ArrayList<PVector>();    
     float radius = 0;
     
-    for(int i =0; i<arrayOfLayerLength.length;i++){
-     float xPosOfLayer =  (i+1)*(wid/5.0);
+    for(int i =0; i<arrayOfLayer.length;i++){
+     float xPosOfLayer =  (i+1)*(wid/(float)(arrayOfLayer.length+1));
      
      previousLayer.clear();
      for(PVector element: previousLayerConstruction){
@@ -187,10 +194,10 @@ class PlaneBrain{
      }
      previousLayerConstruction.clear();
      
-     radius = min(wid/5.0/2.0, hei/(arrayOfLayerLength[i]+1)/2.0 );
+     radius = min(wid/5.0/2.0, hei/(arrayOfLayer[i].length+1)/2.0 );
      
-     for(int j = 0; j < arrayOfLayerLength[i];j++){
-       float yPosOfNode = (j+1)*(hei/( float )(arrayOfLayerLength[i]+1));
+     for(int j = 0; j < arrayOfLayer[i].length;j++){
+       float yPosOfNode = (j+1)*(hei/( float )(arrayOfLayer[i].length+1));
        BrainNode tempNode = arrayOfLayer[i][j];
        fill( (int) ((tempNode.getVal()+1)*255.0/2.0));
        noStroke();
@@ -202,7 +209,7 @@ class PlaneBrain{
        if(tempNode.getType() == layerType.input){
          continue;
        }//end of if(layer type)
-       for(int preLay = 0; preLay<arrayOfLayerLength[i-1];preLay++){
+       for(int preLay = 0; preLay<arrayOfLayer[i-1].length;preLay++){
          stroke( (int) ((tempNode.getConnectionValueAt(preLay)+1)*255.0/2.0));
          strokeWeight(1);
          line(x+xPosOfLayer,y+yPosOfNode, previousLayer.get(preLay).x, previousLayer.get(preLay).y );
@@ -213,17 +220,7 @@ class PlaneBrain{
   }
   
   Double[] getLayerConnection(int layer,int node){//0 = connections of first hidden layer, 1= connections of second hidden layer,2 = connection for output
-    BrainNode[] layerRef;
-    if(layer==0){
-      layerRef = lowwerHiddenLayer;
-    }else if(layer ==1){
-      layerRef = upperHiddenLayyer;
-    }else if(layer==2){
-      layerRef = outputLayer;
-    }else {
-      layerRef = outputLayer;
-     println("Error with geting layer connections"); 
-    }
+    BrainNode[] layerRef = getBrainNodesInArray()[layer];
     return layerRef[node].getConnections();
     
   }
@@ -239,7 +236,7 @@ class BrainNode{
   //----------varibles-start-----------
   double val = 0;
   BrainNode[] lowwerLevel;
-  Double[] connectWeights;
+  Double[] connectWeights = new Double[2];
   layerType type;
   //---------varibles-end---------------
   
@@ -267,6 +264,7 @@ class BrainNode{
       return; 
     }
     double sum = 0;
+    //println("type:" + type +"  Lower lvl:" + lowwerLevel.length + "  con:" +  connectWeights.length );
     for(int i =0; i<lowwerLevel.length; i++){
       sum += connectWeights[i] * ((BrainNode)lowwerLevel[i]).getVal();
     }
