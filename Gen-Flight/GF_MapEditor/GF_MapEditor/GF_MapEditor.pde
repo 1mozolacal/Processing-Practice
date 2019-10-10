@@ -2,7 +2,7 @@
 
 //if loading a map file to edit
 boolean loadFile = false;
-String loadfileName ;//can be full name or just your name ex (GFMapNAME.txt or NAME)
+String loadfileName;//can be full name or just your name ex (GFMapNAME.txt or NAME)
 
 String saveFileAs;
 String saveFileAsTyping = "";
@@ -34,7 +34,11 @@ void setup(){
   }
   unit = height/100.0;
   unit *= viewDensityUnit;
-  if(loadfileName !=null){
+  
+  //loading file when you can't modify the code
+  String[] config = loadStrings("config.txt");
+  if(config !=null){
+    loadfileName = config[0];
     loadFile();
   }
 }
@@ -59,8 +63,9 @@ void draw(){
     +"Saveing: use g, it will save without prompt\n\n"
     +"Map Creating:\n"
     +"  Left click to set first point for rectangle,\n  left click somewhere else to finish rectangle\n"
-    +"  Right click on rectangle to delect\n"
-    +"\n\n:)";
+    +"  Right click on rectangle to delect\n\n"
+    +"If you want to load a map file to edit\nmake a txt file called \"config.txt\" in the same\ndirectory as this program. In that txt write the\nfile name in the first line"
+    +"\n:)";
     text(textStr,width/20,height/20);
     return;
   }
