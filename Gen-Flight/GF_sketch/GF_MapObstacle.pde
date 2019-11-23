@@ -33,7 +33,8 @@ class MapObstacle{
   
   float checkSightIntersection(PVector planePos, PVector planeSight, float xShiftForTesting){
     
-    float closest = -1;
+    float unsetForCloest =-1;//if you change this must change funcation updataPlaneSight in map class
+    float closest = unsetForCloest;
     boolean infiniteSlope = false;
     float slope=-999;
     if(planeSight.x == 0){ 
@@ -56,8 +57,9 @@ class MapObstacle{
       if(interLoc>y*parnetMap.getUnitLength() && interLoc< (y+hei)*parnetMap.getUnitLength() ){//withing y range of the left side of the rect
         PVector tempForDirCheck = new PVector(deltaX,deltaY);
         if( abs(tempForDirCheck.heading() - planeSight.heading() ) < 0.05 ){//Same direction-ish
-          if( tempForDirCheck.mag()< closest || closest == -1 ){
+          if( tempForDirCheck.mag()< closest || closest == unsetForCloest ){
             closest = tempForDirCheck.mag();
+            //DEBUGGING
             //fill(255,0,255);
             //ellipse(planePos.x+deltaX-xShiftForTesting, planePos.y+deltaY, 10,10);
           }
@@ -73,12 +75,10 @@ class MapObstacle{
       if(interLoc>y*parnetMap.getUnitLength() && interLoc< (y+hei)*parnetMap.getUnitLength() ){//withing y range of the left side of the rect
         PVector tempForDirCheck = new PVector(deltaX,deltaY);
         if( abs(tempForDirCheck.heading() - planeSight.heading() ) < 0.05 ){//Same direction-ish
-          if( tempForDirCheck.mag()< closest || closest == -1 ){
-            if( tempForDirCheck.mag()< closest || closest == -1 ){
+          if( tempForDirCheck.mag()< closest || closest == unsetForCloest ){
               closest = tempForDirCheck.mag();
               //fill(255,0,255);
               //ellipse(planePos.x+deltaX-xShiftForTesting, planePos.y+deltaY, 10,10);
-            }
           }
         }
       }
@@ -95,7 +95,7 @@ class MapObstacle{
       if(interLoc>x*parnetMap.getUnitLength() && interLoc< (x+wid)*parnetMap.getUnitLength() ){//withing x range of the left side of the rect
         PVector tempForDirCheck = new PVector(deltaX,deltaY);
         if( abs(tempForDirCheck.heading() - planeSight.heading() ) < 0.05 ){//Same direction-ish
-          if( tempForDirCheck.mag()< closest || closest == -1 ){
+          if( tempForDirCheck.mag()< closest || closest == unsetForCloest ){
             closest = tempForDirCheck.mag();
             //fill(255,0,255);
             //ellipse(planePos.x+deltaX-xShiftForTesting, planePos.y+deltaY, 10,10);
@@ -111,7 +111,7 @@ class MapObstacle{
       if(interLoc>x*parnetMap.getUnitLength() && interLoc< (x+wid)*parnetMap.getUnitLength() ){//withing x range of the left side of the rect
         PVector tempForDirCheck = new PVector(deltaX,deltaY);
         if( abs(tempForDirCheck.heading() - planeSight.heading() ) < 0.5 ){//Same direction-ish
-          if( tempForDirCheck.mag()< closest || closest == -1 ){
+          if( tempForDirCheck.mag()< closest || closest == unsetForCloest ){
             closest = tempForDirCheck.mag();
             //fill(255,0,255);
             //ellipse(planePos.x+deltaX-xShiftForTesting, planePos.y+deltaY, 10,10);

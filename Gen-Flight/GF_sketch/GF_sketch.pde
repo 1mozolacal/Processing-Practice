@@ -10,7 +10,7 @@ float rountTimePerUnit = 0.4;
 float lastTime = -1;
 boolean runOnGoing = true;
 
-String loadMap = "GFMapmaze";//"no" for not loading the map the name of the map if you want to load it **Map need to be in the map folder**
+String loadMap = "GFMapmaze";//"no" for not loading the map, the name of the map if you want to load it **Map need to be in the map folder**
 
 void setup(){
   fullScreen(2);//second screen if connected
@@ -41,7 +41,7 @@ void setup(){
     airForce.add(new Plane() );
   }
   
-  delay(500);
+  
 }
 
 boolean firstRun = true;
@@ -53,11 +53,11 @@ Plane testPlane = new Plane();
 void draw(){
   if(firstRun){
     firstRun =false;
-    delay(500);
+    delay(100);
   }
   background(255);
 
-  //testPlane.drawBrian(width*0.75,0,width*0.25,height*0.5);
+  
   
   
   
@@ -82,7 +82,9 @@ void draw(){
   }
   //testPlane.aiFly(testMap);
   //background(100);
-  
+  /*
+  testPlane.drawBrian(width*0.75,0,width*0.25,height*0.5);
+  testPlane.checkSightLines(testMap);
   if(keyPressed){
     if(key == 'a' ){
       testPlane.fly(fightDir.left,testMap);
@@ -97,7 +99,7 @@ void draw(){
     }
   } else {
     testPlane.fly(fightDir.coast,testMap);
-  }
+  }*/
   
   createUI(width*0.75,height*0.5,width*0.25,height*0.5);
 }
@@ -162,16 +164,18 @@ void newGen(){
   }
   
   Plane[] newBorns = new Plane[killAmount];
-  int bellAmount = 3;
+  int bellAmount = 2;
   for(int i =0; i < newBorns.length; i++){
     double methodRandomizer = Math.random();
     Plane newBorn;
     if(methodRandomizer<0.1){//two parnet method removed for debugging 
-      int randomDad = (int)(killAmount + (rankLowToHigh.length - killAmount) * pow((float)Math.random(),bellAmount) );
-      int randomMom = (int)(killAmount + (rankLowToHigh.length - killAmount) * pow((float)Math.random(),bellAmount) );
+      int randomDad = (int)(killAmount-1 + (rankLowToHigh.length - killAmount) * (1-pow((float)Math.random(),bellAmount)) );
+      int randomMom = (int)(killAmount-1 + (rankLowToHigh.length - killAmount) * (1-pow((float)Math.random(),bellAmount)) );
       newBorn = new Plane(rankLowToHigh[randomDad], rankLowToHigh[randomMom] );
     }else {//one parnet method
-      newBorn = new Plane(rankLowToHigh[(int)(killAmount + (rankLowToHigh.length - killAmount) * pow((float)Math.random(),bellAmount) )] );
+      float variation = 1 - pow((float)Math.random(),bellAmount);
+      int pick = (int)(killAmount-1 + (rankLowToHigh.length - killAmount) * variation );
+      newBorn = new Plane(rankLowToHigh[pick] );
     }
     newBorns[i] = newBorn;
   }

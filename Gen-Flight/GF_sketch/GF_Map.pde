@@ -85,7 +85,7 @@ class Map{
    PVector[] planeSights = plane.getSightLines();
    float[] sightsValues = new float[planeSights.length];
    for(int i =0; i<sightsValues.length;i++){
-     sightsValues[i] = -1;
+     sightsValues[i] = 1;//init as 1
    }
    int sightsValueIndex = 0;
    
@@ -93,21 +93,24 @@ class Map{
      sightsValueIndex =0;
      for(PVector sight: planeSights){
        float value = obs.checkSightIntersection(plane.getPos(),sight,drawShift);
-       if(value==-1){
+       if(value==-1){//has to be the same as unsetForCloest
          sightsValueIndex++;//do not change value
+         continue;
        }else {
          if(value<=plane.getSightDist() ){
-           if(sightsValues[sightsValueIndex]>1-(value/plane.getSightDist()) || sightsValues[sightsValueIndex]==-1){
-             sightsValues[sightsValueIndex] = 1-(value/plane.getSightDist());
-             sightsValueIndex++;
+           if(sightsValues[sightsValueIndex]>(value/plane.getSightDist()) || sightsValues[sightsValueIndex]==-1){
+             sightsValues[sightsValueIndex] = (value/plane.getSightDist());
              //debugging drawing
              //PVector copyOfSight = sight.copy().normalize();
              //copyOfSight.mult(value);
              //fill(255,255,0,125);
              //ellipse(plane.getPos().x + copyOfSight.x - drawShift, plane.getPos().y + copyOfSight.y, 20,20);
            }
+           sightsValueIndex++;
+           continue;
          } else {
            sightsValueIndex++;//do not change value
+           continue;
          }
        }
        

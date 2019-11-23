@@ -1,12 +1,12 @@
 final float maxThrush = 0.5;
-final float maxTurn = 0.4;
-final float maxBack = 0.25;
-final float slowDownRateStart = 0.97;
-final float slowDownRateIncrease = 0.002;
+final float maxTurn = 0.2;
+final float maxBack = 0.25;//this is a percentage
+final float slowDownRateConstant = 0.99;
+final float slowDownRateAcceleration = 0.9;
 final float radius = 10;
 final float sightAngle = 120;
-final int sightNumber = 21;
-final float sightDistane = 250;
+final int sightNumber = 25;
+final float sightDistane = 350;
 
 public enum fightDir{
   forward,left,right,back,coast
@@ -22,6 +22,9 @@ class Plane{
   float score = 0;
   float timeSinceHighVel = -1;
   float timeSinceScoreInc = -1;
+  
+  //debugging
+  boolean firstRun = true;
   
   PlaneBrain brain;
   
@@ -52,6 +55,7 @@ class Plane{
   }
   
   void aiFly(Map mapRef){
+    checkSightLines(mapRef);
     Double[] output = brain.readOutputAsArray();
     int lowest = 0;
     Double lowestValue = output[0];
@@ -88,26 +92,32 @@ class Plane{
     }
     PVector copy = heading.copy();
     
-    float turnCorrector = atan(max(velocity.mag()-0.1,0));//stops very fast turns at close to no speed
-    float turnAngle = HALF_PI*5/6.0;
+    //float turnCorrector = atan(max(velocity.mag()-0.1,0));//stops very fast turns at close to no speed
+    float turnAngle = HALF_PI/2.0;
     
     if(dir == fightDir.forward){
       velocity.add(copy.mult(maxThrush) );
+      velocity.mult(slowDownRateAcceleration);
     }else if(dir == fightDir.left){
-      velocity.add(copy.rotate(-turnAngle).mult(maxThrush*maxTurn*turnCorrector ));
+      float velMagToMantain = velocity.mag();
+      velocity.add(copy.rotate(-turnAngle).mult(velMagToMantain*maxTurn ));
+      velocity.normalize();
+      velocity.mult(velMagToMantain);
     }else if(dir == fightDir.right){
-      velocity.add(copy.rotate(turnAngle).mult(maxThrush*maxTurn*turnCorrector ));
+      float velMagToMantain = velocity.mag();
+      velocity.add(copy.rotate(turnAngle).mult(velMagToMantain*maxTurn ));
+      velocity.normalize();
+      velocity.mult(velMagToMantain);
     }else if(dir == fightDir.back){
       copy.rotate(PI).mult(maxThrush*maxBack);
       if(copy.mag() > velocity.mag() ){
-        velocity.add(copy);
-        velocity.rotate(PI);  
+        velocity.set(0,0);
       }
       else{
        velocity.add(copy); 
       }
     }
-    velocity.mult(slowDownRateStart-slowDownRateIncrease*velocity.mag());//constant slow down - 1% decrease in speed 
+    velocity.mult(slowDownRateConstant);//constant slow down - 5% decrease in speed 
     
     //debugging arrow
     //stroke(0);
@@ -120,12 +130,14 @@ class Plane{
     mapRef.checkHit(this);
     
     drawPlane();
-    checkSightLines(mapRef);
+    
     
     float currentScore = position.x/mapRef.getUnitLength();
     if(currentScore>score){
+      if( (int)currentScore != (int)score){
+        timeSinceScoreInc = millis();//update time during an integar increase
+      }
      score=currentScore; 
-     timeSinceScoreInc = millis();
     }
     if(timeSinceScoreInc == -1){
       timeSinceScoreInc = millis();
@@ -137,7 +149,11 @@ class Plane{
   
   void drawPlane(){
     noStroke();
-    fill(255,0,0,125);
+    if(firstRun){
+      fill(255,0,0,75);
+    } else {
+      fill(0,255,0,75);
+    }
     position.x-= drawShift;
     PVector front = PVector.add(position, heading.copy().normalize().mult(radius) );
     PVector left = PVector.add(position, heading.copy().normalize().rotate(PI*3.0/4.0).mult(radius) );
@@ -145,8 +161,9 @@ class Plane{
     
     triangle(front.x,front.y, left.x,left.y, right.x,right.y );
     
+    
+    //draw sight lines - debugging
     /*
-    //draw sight lines
     stroke(0,0,0,50);
     PVector sightLine = new PVector(sightDistane,0);
     sightLine.rotate( heading.heading() ) ;
@@ -162,6 +179,8 @@ class Plane{
       sightLine.rotate(rot);
     }
     */
+    //end of sight line debugger
+    
     position.x += drawShift;
     
   }
@@ -230,6 +249,8 @@ class Plane{
    if(!alive){ return;}
    alive = false; 
    planeDied();
+   
+   firstRun = false;
   }
   
   void newRound(){
@@ -238,6 +259,10 @@ class Plane{
     velocity = new PVector(0,0);
     heading = new PVector(1,0);
     position = new PVector(150,250);
+    timeSinceHighVel = -1;
+    timeSinceScoreInc = -1;
+    
+    
   }
   
   void setShift(float set){

@@ -5,9 +5,10 @@ final int lowwerHiddenLayerLength = 10;
 final int upperHiddenLayyerLength = 10;
 final int outputLayerLength = 5;
 final int numberOfHiddenLayers = 0; //max two
-float changeAmount = 0.03;
-float mutaionRate = 0.00001;
-float mutationMult = 15;
+float changeProbability = 1;//the change of any modification happening
+float changeAmount = 0.003;
+float mutaionRate = 0.001;
+float mutationMult = 1;
 
 enum layerType{
   input,lowHidden,highHidden,output
@@ -71,15 +72,17 @@ class PlaneBrain{
        Double[] newNodeConnections = new Double[nodeConnectionsParnet.length]; 
        for(int con = 0; con< nodeConnectionsParnet.length; con++){
          double value = nodeConnectionsParnet[con];
-         if(Math.random()<mutaionRate){
-           value += (Math.random()-0.5)*(2*changeAmount*mutationMult);
-         }else {
-           value += (Math.random()-0.5)*(2*changeAmount);
-         }
-         if(value>1){
-          value =1;
-         } else if(value<-1){
-          value = -1; 
+         if(Math.random()< changeProbability){
+           if(Math.random()<mutaionRate){
+             value += (Math.random()-0.5)*(2*changeAmount*mutationMult);
+           }else {
+             value += (Math.random()-0.5)*(2*changeAmount);
+           }
+           if(value>1){
+            value =1;
+           } else if(value<-1){
+            value = -1; 
+           }
          }
          newNodeConnections[con] = value;
        }//end of for (con)
@@ -109,21 +112,23 @@ class PlaneBrain{
        Double[] newNodeConnections = new Double[nodeConnectionsMom.length];
        for(int con = 0; con< nodeConnectionsMom.length; con++){
          double value;
+         
          if(Math.random() > 0.5){
            value = nodeConnectionsMom[con];
          } else {
            value = nodeConnectionsDad[con];
          }
-         
-         if(Math.random()<mutaionRate){
-           value += (Math.random()-0.5)*(2*changeAmount*mutationMult);
-         }else {
-           value += (Math.random()-0.5)*(2*changeAmount);
-         }
-         if(value>1){
-          value =1;
-         } else if(value<-1){
-          value = -1; 
+         if(Math.random() < changeProbability){
+           if(Math.random()<mutaionRate){
+             value += (Math.random()-0.5)*(2*changeAmount*mutationMult);
+           }else {
+             value += (Math.random()-0.5)*(2*changeAmount);
+           }
+           if(value>1){
+            value =1;
+           } else if(value<-1){
+            value = -1; 
+           }
          }
          newNodeConnections[con] = value;
        }//end of for (con)
