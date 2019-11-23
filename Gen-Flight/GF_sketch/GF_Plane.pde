@@ -177,7 +177,8 @@ class Plane{
       sightLine.rotate(-2*rot);
       line(position.x,position.y, position.x + sightLine.x, position.y+sightLine.y);
       sightLine.rotate(rot);
-    }*/
+    }
+    */
     //end of sight line debugger
     
     position.x += drawShift;
