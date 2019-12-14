@@ -1,4 +1,4 @@
-//Map editor/creator
+//Map editor/creator a
 
 //if loading a map file to edit
 boolean loadFile = false;
@@ -48,7 +48,7 @@ void setup(){
 void draw(){
   background(30);
   
-  if(keyPressed && (key=='h' || key=='H')){
+  if(keyPressed && (key=='h' || key=='H') && typingInput != TypingInputStage.fileName){
     fill(255);
     textSize(20);
     String textStr = "Hold h for help at any time\n"
@@ -73,7 +73,7 @@ void draw(){
   if(saveFileAs ==null){
     fill(255);
     textSize(20);
-    text("Select map name:" + saveFileAsTyping +"\n\nHold h at anytime for help",width/8,height/2);
+    text("Select map name:" + saveFileAsTyping +"\n\nHold h at anytime(after this) for help",width/8,height/2);
    return;
   } else if(trackLength==0){
     fill(255);
@@ -167,7 +167,7 @@ void keyPressed(){
     }
   }
   //For debugging and finding out what the buttons are
-  println("key:" + (int) key);
+  //println("key:" + (int) key);
 }
 
 void reCenter(){
@@ -193,6 +193,7 @@ void createMapFile(){
     index++;
   }
   saveStrings("GFMap" + saveFileAs + ".txt", saveLines);
+  print("made file:" + saveFileAs);
   exit();
 }
 
