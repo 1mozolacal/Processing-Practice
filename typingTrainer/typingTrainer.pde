@@ -2,19 +2,16 @@
 
 //global vars
 String textTyped="";
-String textIncoming="abc";
+String textIncoming="a";
 String incorrectText="";
 char lastTyped = 0;
 
-//type sets
-//lower, upper, punc, numbers, symbol, programers symbols
-enum typeSet {lowwer,upper,punc,numbers,symbol,program};
-boolean selectedTypeSet[] = {true,true,true,true,true,true};
-//dict sets
-//top 100, top 1000,programming
-enum dictSets {hundred,thousand,program};
-boolean selectedDictSet[] = {true,false,false};
-boolean useTypeSet = true;//true means use type set and false means dict
+//user config vars
+float errorWeigthOnGeneration =0.4;
+float speedWeightOnGeneration =0.4;
+float amountWeigthOnGeneration =0.2;
+
+ArrayList<ItemRecord> records = new ArrayList<ItemRecord>();
 
 void setup(){
   fullScreen();
@@ -60,33 +57,89 @@ void draw(){
 void getNext(){
  //if using typesets
  if(useTypeSet){
-   ArrayList<Integer> newCharList = new ArrayList<Integer>(); 
+   ArrayList<Object[]> newCharList = new ArrayList<Object[]>(); //array will be of size 2 (char, probability)
+   float totalWeights = 0;
    if(selectedTypeSet[0]){//lowwer case
-      for(int i =97;i<=122;i++){newCharList.add(i);}
+      for(int i =97;i<=122;i++){
+        float tempPro = findRecordProbability(i);
+        totalWeights+= tempPro;
+        Object[] temp = {i,tempPro};
+        newCharList.add( temp );
+      }
     }
     if(selectedTypeSet[1]){//upper case
-      for(int i =65;i<=90;i++){newCharList.add(i);}
+      for(int i =65;i<=90;i++){
+        float tempPro = findRecordProbability(i);
+        totalWeights+= tempPro;
+        Object[] temp = {i,tempPro};
+        newCharList.add( temp );
+      }
     }
     if(selectedTypeSet[2]){//punc
       int asciiList[] = {32,33,34,39,44,46,58,59,63};
-      for(int item: asciiList){newCharList.add(item);}
+      for(int item: asciiList){
+        float tempPro = findRecordProbability(item);
+        totalWeights+= tempPro;
+        Object[] temp = {item,tempPro};
+        newCharList.add( temp );
+      }
     }
     if(selectedTypeSet[3]){//numbers
-      for(int i =48;i<=57;i++){newCharList.add(i);}
+      for(int i =48;i<=57;i++){
+        float tempPro = findRecordProbability(i);
+        totalWeights+= tempPro;
+        Object[] temp = {i,tempPro};
+        newCharList.add( temp );
+      }
     }
     if(selectedTypeSet[5]){//programers
       int asciiList[] = {40,41,42,43,45,47,61,92,123,125};
-      for(int item: asciiList){newCharList.add(item);}
+      for(int item: asciiList){
+        float tempPro = findRecordProbability(item);
+        totalWeights+= tempPro;
+        Object[] temp = {item,tempPro};
+        newCharList.add( temp );
+      }
     }
-   textIncoming+= (char) ((int) newCharList.get((int)(Math.random()*newCharList.size())) );
-   if(textIncoming.length()<20){
-      getNext();
+   
+   for(int i =0; i<1; i++){//add in batches of 20
+     Object textToAppend = pickRandomByWeights(newCharList,totalWeights); 
+     if(textToAppend instanceof String){
+       textIncoming += (String)textToAppend;
+     }else {
+        textIncoming += (char)(int)textToAppend; 
+     }
    }
  }else{//if using dict
   
    
  }
  
+}
+
+
+Object pickRandomByWeights( ArrayList<Object[]> list, float totalWeights){
+  float random = (float)Math.random()*totalWeights;
+  for(Object[] twoItemList:list){
+    random-= (float)twoItemList[1];
+    if(random<=0){
+      return twoItemList[0];
+    }
+  }
+  return null;
+}
+
+float findRecordProbability(Object item){
+  for(ItemRecord search: records){
+    if(search.getItem().equals(item) ){
+      if( search instanceof CharRecord){
+        return ( (CharRecord)search).getProbability();
+      }else if(search instanceof StringRecord){
+        return ( (StringRecord)search).getProbability();
+      }
+    }
+  }
+  return 1;//item has no data, therefore default of 1
 }
 
 void typedKey(char typed){
