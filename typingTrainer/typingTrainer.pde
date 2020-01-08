@@ -5,16 +5,20 @@ String textTyped="";
 String textIncoming="a";
 String incorrectText="";
 char lastTyped = 0;
+int millisOfLastTyped;
+boolean misTyping = false;
 
 //user config vars
 float errorWeigthOnGeneration =0.4;
 float speedWeightOnGeneration =0.4;
 float amountWeigthOnGeneration =0.2;
+boolean charTypeSelector = true;
 
 ArrayList<ItemRecord> records = new ArrayList<ItemRecord>();
 
 void setup(){
-  fullScreen();
+  fullScreen(2);
+  millisOfLastTyped=millis();
 }
 
 void draw(){
@@ -25,7 +29,19 @@ void draw(){
   fill(200);
   noStroke();
   rect(0,0,width,height*0.4);
-  
+  //char and string selector
+  if(charTypeSelector){
+    fill(255,0,0);
+  }else{
+    fill(50);
+  }
+  rect(0,0,width*0.2,height*0.2);
+  if(!charTypeSelector){
+    fill(255,0,0);
+  }else{
+    fill(50);
+  }
+  rect(0,height*0.2,width*0.2,height*0.2);
   //type area
   //rect
   fill(200);
@@ -51,6 +67,17 @@ void draw(){
   text(incorrectTextPrintOut,width/2,height*0.7);
   
   
+   
+  /*
+  String tempPrintOut="";
+  for(ItemRecord re:records){
+    tempPrintOut+= re.stringify()+" " + ((CharRecord)re).getProbability()*100 +"%\n";
+  }
+  fill(100,0,200);
+  textSize(10);
+  text(tempPrintOut,width/2,300);
+  println(records.size());
+  */
 }
 
 
@@ -102,7 +129,7 @@ void getNext(){
       }
     }
    
-   for(int i =0; i<1; i++){//add in batches of 20
+   for(int i =0; i<1; i++){//add in batches of 30
      Object textToAppend = pickRandomByWeights(newCharList,totalWeights); 
      if(textToAppend instanceof String){
        textIncoming += (String)textToAppend;
@@ -143,7 +170,7 @@ float findRecordProbability(Object item){
 }
 
 void typedKey(char typed){
-  if(textIncoming.length()<20){
+  if(textIncoming.length()<2){
   getNext();
   }
   //println("Typed:" + typed);
@@ -157,20 +184,62 @@ void typedKey(char typed){
     if(incorrectText.length()!=0){
       textIncoming= incorrectText.charAt(incorrectText.length()-1) + textIncoming;
       incorrectText=incorrectText.substring(0,incorrectText.length()-1);
-    }else if(textTyped.length()!=0){
-      textIncoming= textTyped.charAt(textTyped.length()-1) + textIncoming;
-      textTyped = textTyped.substring(0,textTyped.length()-1);
+    }else{
+      misTyping=false;
+      if(textTyped.length()!=0){
+        textIncoming= textTyped.charAt(textTyped.length()-1) + textIncoming;
+        textTyped = textTyped.substring(0,textTyped.length()-1);
+      }
     }
     //else do nothing
     println("do nothing");
   }else if(typed==textIncoming.charAt(0)){//correctly typed 
+    logCorrectType(textIncoming.charAt(0));
     textTyped+=textIncoming.charAt(0);
     textIncoming = textIncoming.substring(1);//(1,textIncoming.length());//look at improving later    
   }else{//incorrectly typed
+    logIncorrectType(textIncoming.charAt(0));
     incorrectText+=textIncoming.charAt(0);
     textIncoming = textIncoming.substring(1);
   }
 }
+
+void logCorrectType(Object text){
+  checkIfRecordExists(text);
+  for(ItemRecord record: records){
+    if(text.equals(record.getItem())){
+      record.addCorrectEntry(millis()-millisOfLastTyped);
+      millisOfLastTyped=millis();
+    }
+  }
+}
+void logIncorrectType(Object text){
+  checkIfRecordExists(text);
+  if(misTyping)
+  return;
+  for(ItemRecord record: records){
+    if(text.equals(record.getItem())){
+      record.addMistype();
+    }
+  }
+  misTyping = true;
+}
+
+void checkIfRecordExists(Object item){
+  for(ItemRecord re:records){
+   if(re.getItem().equals(item)){
+    return; 
+   }
+  }
+  ItemRecord newRe;
+  if(item instanceof String){
+  newRe = new StringRecord((String)item,0,0,0);
+  }else{
+   newRe = new CharRecord((char)item,0,0,0); 
+  }
+  records.add(newRe);
+}
+
 
 void keyTyped() {
   println("typed " + int(key) + " " + keyCode);
@@ -186,4 +255,9 @@ void keyReleased() {
   if(lastTyped==key){
    lastTyped=0; 
   }
+}
+
+
+void mousePressed(){
+  
 }
