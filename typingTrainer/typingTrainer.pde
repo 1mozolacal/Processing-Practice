@@ -48,6 +48,26 @@ void draw(){
   noStroke();
   rect(0,height/2,width,height*0.4);
   
+  //draw typeSelectors
+  //char selector
+  for(int charSel=0; charSel<selectedTypeSet.length; charSel++){   
+   if(selectedTypeSet[charSel]){
+     fill(255,0,0);
+   }else{
+     fill(0,0,255); 
+   }
+   ellipse( width*0.2 + (charSel+1)/((float)selectedTypeSet.length+1)*(width*0.8) ,height*0.1,height*0.1,height*0.1);
+  }
+  //String selector
+  for(int stringSel=0; stringSel<selectedDictSet.length; stringSel++){   
+   if(selectedTypeSet[stringSel]){
+     fill(255,0,0);
+   }else{
+     fill(0,0,255); 
+   }
+   ellipse( width*0.2 + (stringSel+1)/((float)selectedDictSet.length+1)*(width*0.8) ,height*0.3,height*0.1,height*0.1);
+  }
+  
   //the text
   textSize(240);
   //typed text
