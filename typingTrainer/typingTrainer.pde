@@ -2,7 +2,7 @@
 
 //global vars
 String textTyped="";
-String textIncoming="a";
+String textIncoming="";
 String incorrectText="";
 char lastTyped = 0;
 int millisOfLastTyped;
@@ -12,7 +12,8 @@ boolean misTyping = false;
 float errorWeigthOnGeneration =0.4;
 float speedWeightOnGeneration =0.4;
 float amountWeigthOnGeneration =0.2;
-boolean charTypeSelector = true;
+boolean charTypeSelector = true;//true = char, false = string
+int tagertLevel = 1;//at higher levels it will show you letter that you are bad at more often*must be atleast 1
 
 ArrayList<ItemRecord> records = new ArrayList<ItemRecord>();
 
@@ -44,7 +45,11 @@ void draw(){
   rect(0,height*0.2,width*0.2,height*0.2);
   //type area
   //rect
-  fill(200);
+  if(misTyping){
+    fill(200,100,100);
+  }else{
+    fill(200);
+  }
   noStroke();
   rect(0,height/2,width,height*0.4);
   
@@ -60,7 +65,7 @@ void draw(){
   }
   //String selector
   for(int stringSel=0; stringSel<selectedDictSet.length; stringSel++){   
-   if(selectedTypeSet[stringSel]){
+   if(selectedDictSet[stringSel]){
      fill(255,0,0);
    }else{
      fill(0,0,255); 
@@ -86,29 +91,20 @@ void draw(){
   fill(255,0,0);
   text(incorrectTextPrintOut,width/2,height*0.7);
   
-  
-   
-  /*
-  String tempPrintOut="";
-  for(ItemRecord re:records){
-    tempPrintOut+= re.stringify()+" " + ((CharRecord)re).getProbability()*100 +"%\n";
-  }
-  fill(100,0,200);
-  textSize(10);
-  text(tempPrintOut,width/2,300);
-  println(records.size());
-  */
 }
 
 
 void getNext(){
- //if using typesets
+ 
+  ArrayList<Object[]> newCharList = new ArrayList<Object[]>(); //array will be of size 2 (char/String, probability)
+  float totalWeights = 0;
+  //if using typesets
  if(useTypeSet){
-   ArrayList<Object[]> newCharList = new ArrayList<Object[]>(); //array will be of size 2 (char, probability)
-   float totalWeights = 0;
+   
    if(selectedTypeSet[0]){//lowwer case
       for(int i =97;i<=122;i++){
-        float tempPro = findRecordProbability(i);
+        float tempPro = findRecordProbability((char)i);
+        tempPro = (float) Math.pow(tempPro,tagertLevel);
         totalWeights+= tempPro;
         Object[] temp = {i,tempPro};
         newCharList.add( temp );
@@ -116,7 +112,8 @@ void getNext(){
     }
     if(selectedTypeSet[1]){//upper case
       for(int i =65;i<=90;i++){
-        float tempPro = findRecordProbability(i);
+        float tempPro = findRecordProbability((char)i);
+        tempPro = (float) Math.pow(tempPro,tagertLevel);
         totalWeights+= tempPro;
         Object[] temp = {i,tempPro};
         newCharList.add( temp );
@@ -125,7 +122,8 @@ void getNext(){
     if(selectedTypeSet[2]){//punc
       int asciiList[] = {32,33,34,39,44,46,58,59,63};
       for(int item: asciiList){
-        float tempPro = findRecordProbability(item);
+        float tempPro = findRecordProbability((char)item);
+        tempPro = (float) Math.pow(tempPro,tagertLevel);
         totalWeights+= tempPro;
         Object[] temp = {item,tempPro};
         newCharList.add( temp );
@@ -133,7 +131,8 @@ void getNext(){
     }
     if(selectedTypeSet[3]){//numbers
       for(int i =48;i<=57;i++){
-        float tempPro = findRecordProbability(i);
+        float tempPro = findRecordProbability((char)i);
+        tempPro = (float) Math.pow(tempPro,tagertLevel);
         totalWeights+= tempPro;
         Object[] temp = {i,tempPro};
         newCharList.add( temp );
@@ -142,25 +141,39 @@ void getNext(){
     if(selectedTypeSet[5]){//programers
       int asciiList[] = {40,41,42,43,45,47,61,92,123,125};
       for(int item: asciiList){
-        float tempPro = findRecordProbability(item);
+        float tempPro = findRecordProbability((char)item);
+        tempPro = (float) Math.pow(tempPro,tagertLevel);
         totalWeights+= tempPro;
         Object[] temp = {item,tempPro};
         newCharList.add( temp );
       }
     }
    
-   for(int i =0; i<1; i++){//add in batches of 30
-     Object textToAppend = pickRandomByWeights(newCharList,totalWeights); 
-     if(textToAppend instanceof String){
-       textIncoming += (String)textToAppend;
-     }else {
-        textIncoming += (char)(int)textToAppend; 
-     }
-   }
+   
  }else{//if using dict
   
    
  }
+ 
+ if(newCharList.isEmpty()){
+  println("ERROR new char list is empty"); 
+  return;
+ }
+ 
+ for(int i =0; i<10; i++){//add in batches of 10
+     Object textToAppend = pickRandomByWeights(newCharList,totalWeights); 
+     if(textToAppend instanceof String){
+       textIncoming += (String)textToAppend;
+     }else {
+       int repeatTimes = 1;
+       if(selectedTypeSet[6]){
+        repeatTimes = (int)(Math.random()*4) +2; 
+       }
+       for(int j=0;j<repeatTimes;j++){
+        textIncoming += (char)(int)textToAppend; 
+       }
+     }
+   }//end of for
  
 }
 
@@ -173,6 +186,7 @@ Object pickRandomByWeights( ArrayList<Object[]> list, float totalWeights){
       return twoItemList[0];
     }
   }
+  println("ERROR getting number by wight");
   return null;
 }
 
@@ -190,10 +204,9 @@ float findRecordProbability(Object item){
 }
 
 void typedKey(char typed){
-  if(textIncoming.length()<2){
+  if(textIncoming.length()<15){
   getNext();
   }
-  //println("Typed:" + typed);
   if(textIncoming.length()==0 && typed !=8){
    //error
    println("ERROR text incoming is null");
@@ -205,14 +218,17 @@ void typedKey(char typed){
       textIncoming= incorrectText.charAt(incorrectText.length()-1) + textIncoming;
       incorrectText=incorrectText.substring(0,incorrectText.length()-1);
     }else{
-      misTyping=false;
       if(textTyped.length()!=0){
         textIncoming= textTyped.charAt(textTyped.length()-1) + textIncoming;
         textTyped = textTyped.substring(0,textTyped.length()-1);
       }
     }
-    //else do nothing
-    println("do nothing");
+    if(incorrectText.length()==0){
+     misTyping=false; 
+    }
+  }else if(misTyping){//if you are currently mistyping just more the letter to the wroung area
+    incorrectText+=textIncoming.charAt(0);
+    textIncoming = textIncoming.substring(1);
   }else if(typed==textIncoming.charAt(0)){//correctly typed 
     logCorrectType(textIncoming.charAt(0));
     textTyped+=textIncoming.charAt(0);
@@ -262,12 +278,13 @@ void checkIfRecordExists(Object item){
 
 
 void keyTyped() {
-  println("typed " + int(key) + " " + keyCode);
+  
   if(lastTyped!=key){
     lastTyped=key;
     //function for entering a key
     typedKey(key);
   }
+
 }
 
 void keyReleased() {
@@ -279,5 +296,33 @@ void keyReleased() {
 
 
 void mousePressed(){
+  //type selector button
+  if(mouseX<width*0.2){
+    if(mouseY<height*0.2){
+      charTypeSelector=true;
+    }else if(mouseY<height*0.4){
+      charTypeSelector=false;
+    }
+  }
+  
+  //char buttons
+  for(int charSel=0; charSel<selectedTypeSet.length; charSel++){   
+    float cirX = width*0.2 + (charSel+1)/((float)selectedTypeSet.length+1)*(width*0.8);
+    float cirY = height*0.1;
+    if( Math.sqrt( Math.pow((cirX-mouseX),2) + Math.pow((cirY-mouseY),2)) <= height*0.1/2 ){
+      selectedTypeSet[charSel]=! selectedTypeSet[charSel];
+    }
+  }
+  
+  //string buttons
+  for(int stringSel=0; stringSel<selectedDictSet.length; stringSel++){   
+    float cirX = width*0.2 + (stringSel+1)/((float)selectedDictSet.length+1)*(width*0.8) ;
+    float cirY = height*0.3;
+    
+    if( Math.sqrt( Math.pow((cirX-mouseX),2) + Math.pow((cirY-mouseY),2)) <= height*0.1/2 ){
+      selectedDictSet[stringSel]=! selectedDictSet[stringSel];
+    }
+  }
+  
   
 }
