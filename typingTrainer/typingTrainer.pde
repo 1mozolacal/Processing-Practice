@@ -2,7 +2,7 @@
 
 //global vars
 String textTyped="";
-String textIncoming="";
+String textIncoming="iIlL";
 String incorrectText="";
 char lastTyped = 0;
 int millisOfLastTyped;
@@ -18,8 +18,11 @@ int tagertLevel = 1;//at higher levels it will show you letter that you are bad 
 ArrayList<ItemRecord> records = new ArrayList<ItemRecord>();
 
 void setup(){
-  fullScreen(2);
+  fullScreen(1);
   millisOfLastTyped=millis();
+  println(PFont.list());
+  PFont myFont = createFont("Cambria",80);
+  textFont(myFont);
 }
 
 void draw(){
@@ -74,7 +77,7 @@ void draw(){
   }
   
   //the text
-  textSize(240);
+  textSize(height/4);
   //typed text
   fill(0,255,0);
   String textTypedPrintOut = ( textTyped ==null) ? "" : textTyped;
